@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useState, useRef} from 'react';
 import {useGeminiApi} from "./studioAi.jsx";
 import Markdown from 'react-markdown';
 
@@ -6,6 +6,9 @@ function ChatBot() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [rows, setRows] = useState(1); // Start with 1 row
+  const textareaRef = useRef(null);
+  const messagesEndRef = useRef(null); // Reference for auto-scrolling
   const {generateResponse} = useGeminiApi();
 
   // Add a system message at the beginning of conversation
@@ -18,6 +21,27 @@ function ChatBot() {
     }
   }, []);
 
+  // Auto-scroll to the latest message
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
+  // Auto-resize textarea based on content
+  useEffect(() => {
+    if (!textareaRef.current) return;
+
+    // Reset height to get the correct scrollHeight
+    textareaRef.current.style.height = 'auto';
+
+    // Calculate the number of newlines
+    const lineCount = (input.match(/\n/g) || []).length + 1;
+
+    // Set rows between 1 and 5 based on content
+    setRows(Math.min(Math.max(lineCount, 1), 5));
+  }, [input]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -27,6 +51,7 @@ function ChatBot() {
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
     setIsLoading(true);
+    setRows(1); // Reset rows after sending
 
     try {
       // Pass the entire message history along with the current input
@@ -73,7 +98,7 @@ function ChatBot() {
               } max-w-[80%]`}
             >
               {message.role === 'user' ? (
-                message.content
+                <div className="whitespace-pre-wrap">{message.content}</div>
               ) : (
                 <div className="markdown-body">
                   <Markdown>{message.content}</Markdown>
@@ -91,16 +116,18 @@ function ChatBot() {
             </div>
           </div>
         )}
+        <div ref={messagesEndRef} /> {/* Empty div for auto-scrolling */}
       </div>
 
       <form onSubmit={handleSubmit} className="flex gap-2">
         <textarea
+          ref={textareaRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          rows={rows}
+          className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none min-h-[40px] transition-all duration-200"
           placeholder="Type a message... (Shift+Enter for new line)"
-          rows={3}
         />
         <button
           type="submit"
