@@ -1,20 +1,29 @@
-import { useState } from 'react';
-import { useGeminiApi } from "./studioAi.jsx";
-import ReactMarkdown from 'react-markdown';
-import Markdown from "react-markdown";
+import {useEffect, useState} from 'react';
+import {useGeminiApi} from "./studioAi.jsx";
+import Markdown from 'react-markdown';
 
 function ChatBot() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { generateResponse } = useGeminiApi();
+  const {generateResponse} = useGeminiApi();
+
+  // Add a system message at the beginning of conversation
+  useEffect(() => {
+    if (messages.length === 0) {
+      setMessages([{
+        role: 'bot',
+        content: 'Xin chào! Tôi là trợ lý AI. Tôi sẽ nhớ toàn bộ cuộc trò chuyện của chúng ta và trả lời các câu hỏi của bạn theo ngữ cảnh.'
+      }]);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
 
     // Add user message to chat
-    const userMessage = { role: 'user', content: input };
+    const userMessage = {role: 'user', content: input};
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
     setIsLoading(true);
@@ -22,7 +31,7 @@ function ChatBot() {
     try {
       // Pass the entire message history along with the current input
       const responseText = await generateResponse(input, updatedMessages);
-      const botMessage = { role: 'bot', content: responseText };
+      const botMessage = {role: 'bot', content: responseText};
       setMessages([...updatedMessages, botMessage]);
     } catch (error) {
       console.error('Error in chat:', error);
@@ -36,6 +45,7 @@ function ChatBot() {
     }
   };
 
+  // Rest of your component remains the same...
   return (
     <div className="flex flex-col h-[80vh] max-w-2xl mx-auto p-4 bg-gray-50 rounded-lg shadow">
       <div className="flex-1 overflow-y-auto mb-4 space-y-4">
