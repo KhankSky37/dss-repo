@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import {useState} from 'react';
 import {useGeminiApi} from "./studioAi.jsx";
+import Markdown from 'react-markdown';
 
 function ChatBot() {
   const [messages, setMessages] = useState([]);
@@ -49,7 +50,9 @@ function ChatBot() {
                   : 'bg-gray-200 text-gray-800 mr-auto'
               } max-w-[80%]`}
             >
-              {message.content}
+              <div className="markdown-body">
+                <Markdown>{message.content}</Markdown>
+              </div>
             </div>
           ))
         )}
