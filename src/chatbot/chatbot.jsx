@@ -13,7 +13,7 @@ function ChatBot() {
     if (messages.length === 0) {
       setMessages([{
         role: 'bot',
-        content: 'Xin chào! Tôi là trợ lý AI. Tôi sẽ nhớ toàn bộ cuộc trò chuyện của chúng ta và trả lời các câu hỏi của bạn theo ngữ cảnh.'
+        content: 'Xin chào! Tôi là trợ lý AI. Tôi có thể giúp gì cho bạn hôm nay?'
       }]);
     }
   }, []);
