@@ -1,6 +1,7 @@
-import {useState} from 'react';
-import {useGeminiApi} from "./studioAi.jsx";
-import Markdown from 'react-markdown';
+import { useState } from 'react';
+import { useGeminiApi } from "./studioAi.jsx";
+import ReactMarkdown from 'react-markdown';
+import Markdown from "react-markdown";
 
 function ChatBot() {
   const [messages, setMessages] = useState([]);
@@ -14,16 +15,18 @@ function ChatBot() {
 
     // Add user message to chat
     const userMessage = { role: 'user', content: input };
-    setMessages((prev) => [...prev, userMessage]);
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
     setIsLoading(true);
 
     try {
-      const responseText = await generateResponse(input);
+      // Pass the entire message history along with the current input
+      const responseText = await generateResponse(input, updatedMessages);
       const botMessage = { role: 'bot', content: responseText };
-      setMessages((prev) => [...prev, botMessage]);
+      setMessages([...updatedMessages, botMessage]);
     } catch (error) {
       console.error('Error in chat:', error);
-      setMessages((prev) => [...prev, {
+      setMessages([...updatedMessages, {
         role: 'bot',
         content: 'Sorry, there was an error processing your request.'
       }]);
@@ -50,9 +53,13 @@ function ChatBot() {
                   : 'bg-gray-200 text-gray-800 mr-auto'
               } max-w-[80%]`}
             >
-              <div className="markdown-body">
-                <Markdown>{message.content}</Markdown>
-              </div>
+              {message.role === 'user' ? (
+                message.content
+              ) : (
+                <div className="markdown-body">
+                  <Markdown>{message.content}</Markdown>
+                </div>
+              )}
             </div>
           ))
         )}
